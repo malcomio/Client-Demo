@@ -89,6 +89,7 @@ else {
       }
       .full {
         width: 100%;
+        min-height: 600px;
       }
       #logo img, .full img {
         margin: 0 auto;
