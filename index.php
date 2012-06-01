@@ -77,7 +77,7 @@ if ($_REQUEST['page']) {
       foreach ($file_types as $file_type) {
         $filename = $bk . '.' . $file_type;
         if (file_exists($filename)) {
-          $background = "background: url(bk.jpg) repeat-x 0 -1px;";
+          $background = "background: url(bk.jpg) repeat-x;";
           break;
         }
       }
