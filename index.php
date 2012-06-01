@@ -1,16 +1,21 @@
 <?php
 // define the logo image
 $logo = 'logo.png';
+$website = 'http://rubydesign.co.uk';
+$email = 'info@rubydesign.co.uk';
+$phone = '020 8480 0370';
+$title = 'Ruby Design - mockups';
 
 // build an array of all the image files in the current directory
 $directory = opendir("mockups");
 $file_types = array('png', 'jpg', 'jpeg', 'gif');
 $files = array();
 while ($file = readdir($directory)) {
-  $dotpos = 
-  
+  // Is this one of our accepted file types?
   $extension = substr(strtolower(strrchr($file, '.')), 1);
   if (in_array($extension, $file_types)) {
+
+    // Split the filename so we can check for colours.
     $filename = explode('_', $file);
 
     if (array_key_exists(2, $filename)) {
@@ -20,10 +25,17 @@ while ($file = readdir($directory)) {
       $bk = FALSE;
     }
     
+    $number = $filename[1];
+
+    // If there is no filename[2], remove the file extension.
+    if($dotpos = strpos($number, '.')) {
+      $number = substr($number, 0, $dotpos);
+    }
+
     $files[] = array(
       'file' => $file,
       'ext' => $extension,
-      'number' => $filename[1],
+      'number' => $number,
       'bk' => $bk,
     );
   }
@@ -31,12 +43,19 @@ while ($file = readdir($directory)) {
 
 sort($files);
 
+// Are we displaying the full version of one image?
 if ($_REQUEST['page']) {
   $next_page = $_REQUEST['page'] + 1;
-  $image = $_REQUEST['page'] - 1;
-  $img = $files[$image]['file'];
-  $extension = $files[$image]['ext'];
-  $bk = $files[$image]['bk'];
+  
+  $key = $_REQUEST['page'] - 1;
+  
+  $image = $files[$key];
+  
+  
+  $img = $image['file'];
+  $extension = $image['ext'];
+  $bk = $image['bk'];
+  $title = $image['number'];
 
   if ($next_page > count($files)) {
     // Link back to the beginning if we're on the last image.
@@ -48,11 +67,21 @@ if ($_REQUEST['page']) {
   }
   $output = "<a href='$url' class='full'><img src='mockups/$img'/></a>";
 
-  if ($bk == 'bk') {
-    $background = "background: url(bk.jpg) repeat-x 0 -1px;";
-  }
-  elseif ($bk) {
-    $background = "background: #$bk";
+  if ($bk) {
+    // Is this a valid hex colour?
+    if (preg_match('/^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/i', $bk)) {
+      $background = "background: #$bk";
+    }
+    else {
+      // Is there a matching file?
+      foreach ($file_types as $file_type) {
+        $filename = $bk . '.' . $file_type;
+        if (file_exists($filename)) {
+          $background = "background: url(bk.jpg) repeat-x 0 -1px;";
+          break;
+        }
+      }
+    }
   }
   else {
     // Process the image using GD.
@@ -74,28 +103,34 @@ if ($_REQUEST['page']) {
     $r = ($rgb >> 16) & 0xFF;
     $g = ($rgb >> 8) & 0xFF;
     $b = $rgb & 0xFF;
-    
+
     // Set the background colour to match.
     $background = "background-color: rgb($r, $g, $b);";
   }
 }
 else {
-  $output = '<div id="logo" href="http://rubydesign.co.uk"><img src="' . $logo . '"/></div>';
-  $output .= '<div class="contact">020 8480 0370<br/><a href="mailto:info@rubydesign.co.uk">info@rubydesign.co.uk</a></div>';
+  // Display thumbnails of all the designs.
+  $output = '<div id="logo" href="' . $website . '"><img src="' . $logo . '"/></div>';
+  $output .= '<div class="contact">' . $phone . '<br/><a href="mailto:' . $email . '">' . $email . '</a></div>';
+  $output .= '<div class="help">Click on the thumbnails to view the full image.<br/>Click anywhere on the full image to view the next image.</div>';
   $output .= '<div class="thumbnails">';
+  
   $counter = 0;
   $row_split = floor(count($files) / 2);
 
-  if(is_dir('thumbnails')) {
-    $thumbnail_dir = 'thumbnails';
-  }
-  else {
-    $thumbnail_dir = 'mockups';
-  }
   foreach ($files as $image) {
     $counter++;
-    $output .= "<a class='thumbnail' href='index.php?page=$counter'><img src='$thumbnail_dir/{$image['file']}' width='240' height='180'/><div class='filename'>{$image['number']}</div></a>";
-    if($counter == $row_split) {
+    
+    $filename = $image['file'];
+    
+    // Display a proper thumbnail if possible.
+    $thumbnail = 'thumbnails/' . $filename;
+    if(!file_exists($thumbnail)) {
+      $thumbnail = 'mockups/' . $filename;
+    }
+    
+    $output .= "<a class='thumbnail' href='index.php?page=$counter'><img src='$thumbnail' width='240' height='180'/><div class='filename'>{$image['number']}</div></a>";
+    if ($counter == $row_split) {
       $output .= '</div><div class="thumbnails">';
     }
   }
@@ -106,7 +141,7 @@ else {
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title></title>
+    <title><?php print $title; ?></title>
     <style>
       html {
         font-family: Arial,Helvetica,sans-serif;
@@ -116,7 +151,7 @@ else {
         margin: 0;
         <?php print $background; ?>
       }
-      .thumbnails, .contact, #logo {
+      .thumbnails, .contact, #logo, .help {
         clear: both;
         margin: 20px auto;
         overflow: auto;
@@ -141,7 +176,7 @@ else {
         color: #000;
         display: inline-block;
       }
-      
+
       .filename {
         text-align: center;
         font-weight: bold;
@@ -150,6 +185,6 @@ else {
     </style>
   </head>
   <body>
-<?php print $output; ?>
+    <?php print $output; ?>
   </body>
 </html>
