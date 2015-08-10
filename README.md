@@ -24,4 +24,4 @@ If background is not present in the filename, the script will check for the colo
 Edit the variables at the top of the file with your own phone, email and URL.
 
 ## Example usage
-A demonstration is available at http://rubydesign.co.uk/mockup_demo
+A demonstration is available at http://rubydesign.co.uk/mockup_demo/
