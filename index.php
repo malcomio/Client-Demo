@@ -1,9 +1,9 @@
 <?php
 // define the logo image
-$logo = 'http://clients.rubydesign.co.uk/images/logo.png';
-$website = 'https://www.rubydesign.co.uk';
+$logo = 'logo.png';
+$website = 'http://rubydesign.co.uk';
 $email = 'info@rubydesign.co.uk';
-$phone = '020 8013 6515';
+$phone = '020 8480 0370';
 $title = 'Ruby Design - mockups';
 
 // build an array of all the image files in the current directory
